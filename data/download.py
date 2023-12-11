@@ -1,7 +1,6 @@
 import yfinance as yf
 import sys
 
-
 def download_ticker(ticker_str, period_str, interval_str):
     ticker = yf.Ticker(ticker_str)
     filename = f'{ticker_str}_{period_str}_{interval_str}.csv'

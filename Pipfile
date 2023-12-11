@@ -7,11 +7,11 @@ name = "pypi"
 tensorflow = "*"
 numpy = "*"
 pandas = "*"
-pandas-ta = "*"
 matplotlib = "*"
 seaborn = "*"
 scikit-learn = "*"
 yfinance = "*"
+pandas-ta = {ref = "development", git = "https://github.com/twopirllc/pandas-ta.git"}
 
 [dev-packages]
 ipykernel = "*"
