@@ -17,7 +17,7 @@ def create_features(time_series, open_col, close_col, high_col, low_col, vol_col
     # Sigh of return
     df['SIGN'] = np.where(df['RET'] < 0, -1, 1)
     # Create features for different time periods (numbers represent days)
-    periods = [7, 14, 28]
+    periods = [6, 8, 12, 24, 48, 72]
     for i in periods:
         # % change in closing price
         df['PCHG' + str(i)] = df[close_col].pct_change(i)
@@ -47,7 +47,8 @@ def create_features(time_series, open_col, close_col, high_col, low_col, vol_col
             df[close_col].rolling(i).std() * multiplier
         # Momentum
         df['MOM' + str(i)] = df[close_col] - df[close_col].shift(i)
-    
+    # MACD
+    df['MACD'] = df[close_col].ewm(span=12, adjust=False).mean() - df[close_col].ewm(span=24, adjust=False).mean()
     # Reorder the columns into alphabetical order for easier analysis and visualization
     new_column_order = df.columns.sort_values()
     df = df[new_column_order]
