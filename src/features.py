@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
+    
 
-def create_features(time_series, open_col, close_col, high_col, low_col, vol_col):
+def create_features(df, open_col, close_col, high_col, low_col, vol_col):
     # Original reference Kannan Singaravelu, with some tweaks
-    df = time_series.df.copy()
+    df = df.copy()
     multiplier = 2
     # Features
     # Open close - % difference between closing and opening price on any particular day
@@ -49,6 +50,12 @@ def create_features(time_series, open_col, close_col, high_col, low_col, vol_col
         df['MOM' + str(i)] = df[close_col] - df[close_col].shift(i)
     # MACD
     df['MACD'] = df[close_col].ewm(span=12, adjust=False).mean() - df[close_col].ewm(span=24, adjust=False).mean()
+    # Fast stochastic
+    df['F_STOCH'] = (df[close_col] - df[low_col].rolling(14).max()) / (df[high_col].rolling(14).max() - df[low_col].rolling(14).max())
+    # Slow stochastic
+    df['S_STOCH'] = df['F_STOCH'].rolling(3).mean()
+    # On balance volume
+    df['OBV'] = (np.sign(df[close_col].diff()) * df[vol_col]).fillna(0).cumsum()
     # Reorder the columns into alphabetical order for easier analysis and visualization
     new_column_order = df.columns.sort_values()
     df = df[new_column_order]
