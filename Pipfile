@@ -12,7 +12,9 @@ scikit-learn = "*"
 yfinance = "*"
 requests = "*"
 python-dotenv = "*"
-umap-learn = "*"
+umap-learn = {extras = ["plot"], version = "*"}
+plotly = "*"
+nbformat = "*"
 
 [dev-packages]
 ipykernel = "*"
