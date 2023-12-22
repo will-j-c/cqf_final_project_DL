@@ -54,5 +54,4 @@ def create_features(time_series, open_col, close_col, high_col, low_col, vol_col
     df = df[new_column_order]
     # Drop NaN values and other features that we won't use
     df.dropna(inplace=True)
-
     return df

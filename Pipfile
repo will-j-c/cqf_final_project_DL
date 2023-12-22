@@ -12,6 +12,7 @@ scikit-learn = "*"
 yfinance = "*"
 requests = "*"
 python-dotenv = "*"
+umap-learn = "*"
 
 [dev-packages]
 ipykernel = "*"
