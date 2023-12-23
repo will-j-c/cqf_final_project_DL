@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "549dcbae8ca11eb652c1c9020aff765a6ecf3632e28f47b54e2c00fae1a3c0f2"
+            "sha256": "b2a40184bc83159ba26d9d18e27f591101e0f41393bc42013566982acdfa5d18"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -394,11 +394,11 @@
         },
         "importlib-metadata": {
             "hashes": [
-                "sha256:7fc841f8b8332803464e5dc1c63a2e59121f46ca186c0e2e182e80bf8c1319f7",
-                "sha256:d97503976bb81f40a193d41ee6570868479c69d5068651eb039c40d850c59d67"
+                "sha256:4805911c3a4ec7c3966410053e9ec6a1fecd629117df5adee56dfc9432a1081e",
+                "sha256:f238736bb06590ae52ac1fab06a3a9ef1d8dce2b7a35b5ab329371d6c8f5d2cc"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==7.0.0"
+            "version": "==7.0.1"
         },
         "jinja2": {
             "hashes": [
@@ -972,6 +972,10 @@
             ],
             "index": "pypi",
             "version": "==2.1.4"
+        },
+        "pandas-ta": {
+            "git": "https://github.com/twopirllc/pandas-ta.git",
+            "ref": "affcac4684a85ecfb86d2e596a45eff8f701d699"
         },
         "panel": {
             "hashes": [
@@ -1644,11 +1648,11 @@
         },
         "ipython": {
             "hashes": [
-                "sha256:ca6f079bb33457c66e233e4580ebfc4128855b4cf6370dddd73842a9563e8a27",
-                "sha256:e8267419d72d81955ec1177f8a29aaa90ac80ad647499201119e2f05e99aa397"
+                "sha256:2f55d59370f59d0d2b2212109fe0e6035cfea436b1c0e6150ad2244746272ec5",
+                "sha256:ac4da4ecf0042fb4e0ce57c60430c2db3c719fa8bdf92f8631d6bd8a5785d1f0"
             ],
-            "markers": "python_version >= '3.9'",
-            "version": "==8.18.1"
+            "markers": "python_version >= '3.10'",
+            "version": "==8.19.0"
         },
         "jedi": {
             "hashes": [
