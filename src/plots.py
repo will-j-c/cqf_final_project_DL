@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-plt.style.use('ggplot')
+plt.style.use('seaborn-v0_8')
 
 
 def plot_price_vol(df, close_col='Close', vol_col='Volume'):
