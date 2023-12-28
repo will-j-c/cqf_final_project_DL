@@ -17,6 +17,8 @@ plotly = "*"
 nbformat = "*"
 pandas-ta = {ref = "development", git = "https://github.com/twopirllc/pandas-ta.git"}
 ta-lib = "*"
+tensorflow = {extras = ["and-cuda"], version = "*"}
+statsmodels = "*"
 
 [dev-packages]
 ipykernel = "*"
