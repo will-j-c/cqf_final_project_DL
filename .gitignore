@@ -1,2 +1,5 @@
 .env
 src/__pycache__
+# Large data files
+data/test/
+data/train/
