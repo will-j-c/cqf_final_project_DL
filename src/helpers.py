@@ -13,7 +13,7 @@ def set_seeds(seed=42):
     tf.random.set_seed(seed)
     
 # Transformers
-class VifTransform(BaseEstimator, TransformerMixin):
+class VIFTransform(BaseEstimator, TransformerMixin):
     def __init__(self, threshold=5, dropna=False):
         self.threshold = threshold
         self.dropna = dropna
@@ -31,8 +31,9 @@ class VifTransform(BaseEstimator, TransformerMixin):
     
     def fit_transform(self, X):
         X = X.copy()
+        print('Calculating VIF Factors')
         self.vif = self._calc_vif(X)
-        
+        print('Calculating VIF Factors - Complete')
         # Filter the desired vif features based on the threshold
         # Drop NaN features (happens when feature set is all zeros)
         if self.dropna:

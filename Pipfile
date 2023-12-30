@@ -19,6 +19,7 @@ pandas-ta = {ref = "development", git = "https://github.com/twopirllc/pandas-ta.
 ta-lib = "*"
 tensorflow = {extras = ["and-cuda"], version = "*"}
 statsmodels = "*"
+boruta = "*"
 
 [dev-packages]
 ipykernel = "*"
