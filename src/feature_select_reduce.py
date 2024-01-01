@@ -51,39 +51,27 @@ y_val = pd.read_csv('data/val/y_val.csv', parse_dates=True, index_col='unix')
 y = pd.concat([y_train, y_val, y_test])
 weights = cwts(y.values.flatten())
 
-# Reshape the data into the correct format
-seqlen = 1
-featurelen = X_train.shape[-1]
-train_tensors = tf.keras.utils.timeseries_dataset_from_array(
-    X_train, y_train, seqlen)
-val_tensors = tf.keras.utils.timeseries_dataset_from_array(
-    X_val, y_val, seqlen)
-test_tensors = tf.keras.utils.timeseries_dataset_from_array(
-    X_test, y_test, seqlen)
-
-# Baseline model
-inputs = tf.keras.Input(shape=(seqlen, featurelen))
-x = tf.keras.layers.LSTM(36)(inputs)
-outputs = tf.keras.layers.Dense(units=1, activation='sigmoid')(x)
-model = tf.keras.Model(inputs, outputs)
-
-# Compile baseline classifier model
-model.compile(optimizer='rmsprop', loss='binary_crossentropy',
-              metrics=['accuracy', tf.keras.metrics.Precision(), tf.keras.metrics.Recall()])
+# Metrics
+accuracy = tf.keras.metrics.Accuracy()
+binary_accuracy = tf.keras.metrics.BinaryAccuracy()
+precision = tf.keras.metrics.Precision()
+recall = tf.keras.metrics.Recall()
 
 # Define the various feature selection methods
 rf = RandomForestClassifier(n_jobs=-1, class_weight=weights)
-vif = VIFTransform()
+vif = VIFTransform(threshold=10)
 boruta = BorutaPy(rf, n_estimators='auto', verbose=2)
-umap = UMAP(n_neighbors=5)
+umap = UMAP(n_neighbors=10)
 
 # Define data pipelines
 pipelines = [
     'none',
-    # Pipeline([('vif', vif)], verbose=True),
-    # Pipeline([('vif', vif), ('boruta', boruta)], verbose=True),
-    # Pipeline([('boruta', boruta)], verbose=True),
-    Pipeline([('boruta', boruta), ('umap', umap)], verbose=True)
+    Pipeline([('vif', vif)], verbose=True),
+    Pipeline([('vif', vif), ('boruta', boruta)], verbose=True),
+    Pipeline([('boruta', boruta)], verbose=True),
+    Pipeline([('boruta', boruta), ('umap', umap)], verbose=True),
+    Pipeline([('umap', umap)], verbose=True),
+    Pipeline([('vif', vif), ('umap', umap)], verbose=True)
 ]
 
 for pipe in pipelines:
@@ -106,20 +94,12 @@ for pipe in pipelines:
         tf.keras.callbacks.TensorBoard(log_dir=filepath, histogram_freq=1)]
 
     if pipe == 'none':
-        model.fit(x=train_tensors, epochs=100, validation_data=val_tensors,
-                  class_weight=weights, callbacks=callbacks)
-
-        end = time.time()
-        duration = '{0:.5f}'.format(end - start)
-        print(f'Duration of pipeline: {duration} seconds')
-        # Continue the loop
-        continue
-
+        X_train_pipe = X_train.copy()
+        X_val_pipe = X_val.copy()
     # Create the output of the pipeline
     # If Boruta is first (as it can't handle a df input)
-    if list(pipe.named_steps.keys())[0] == 'boruta':
-        X_train_pipe = pipe.fit_transform(
-            X_train.values, y_train.values.ravel())
+    elif list(pipe.named_steps.keys())[0] == 'boruta':
+        X_train_pipe = pipe.fit_transform(X_train.values, y_train.values.ravel())
         X_val_pipe = pipe.transform(X_val.values)
     else:
         X_train_pipe = pipe.fit_transform(X_train, y_train.values.ravel())
@@ -141,7 +121,7 @@ for pipe in pipelines:
 
     # Compile baseline classifier model
     model.compile(optimizer='rmsprop', loss='binary_crossentropy',
-                  metrics=['accuracy', tf.keras.metrics.Precision(), tf.keras.metrics.Recall()])
+                  weighted_metrics=[accuracy, binary_accuracy, precision, recall])
 
     # Fit the models
     model.fit(x=train_tensors, epochs=100, validation_data=val_tensors,
@@ -149,5 +129,5 @@ for pipe in pipelines:
 
     # Clean up logging
     end = time.time()
-    duration = '{0:.5f}'.format(end - start)
+    duration = '{0:.1f}'.format(end - start)
     print(f'Duration of pipeline: {duration} seconds')
