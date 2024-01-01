@@ -52,7 +52,6 @@ y = pd.concat([y_train, y_val, y_test])
 weights = cwts(y.values.flatten())
 
 # Metrics
-accuracy = tf.keras.metrics.Accuracy()
 binary_accuracy = tf.keras.metrics.BinaryAccuracy()
 precision = tf.keras.metrics.Precision()
 recall = tf.keras.metrics.Recall()
@@ -80,14 +79,16 @@ for pipe in pipelines:
 
     # Create file path for run
     filepath = './tensorboard/feature_selection/run'
+    run_name = ''
     time_str = datetime.now().strftime('%m-%d-%Y-%H:%M:%S')
     if pipe == 'none':
-        filepath += '_all_'
+        run_name += '_all_'
     else:
         for key in pipe.named_steps.keys():
-            filepath += f'_{key}_'
+            run_name += f'_{key}_'
+    filepath += run_name
     filepath += time_str
-
+    print(f'Starting {run_name} run')
     # Callbacks
     callbacks = [
         tf.keras.callbacks.EarlyStopping(patience=5),
@@ -115,13 +116,13 @@ for pipe in pipelines:
 
     # Baseline model
     inputs = tf.keras.Input(shape=(seqlen, featurelen))
-    x = tf.keras.layers.LSTM(36)(inputs)
-    outputs = tf.keras.layers.Dense(units=1, activation='sigmoid')(x)
+    x = tf.keras.layers.LSTM(36)(inputs, name=f'lstm{run_name}')
+    outputs = tf.keras.layers.Dense(units=1, activation='sigmoid', name=f'dense{run_name}')(x)
     model = tf.keras.Model(inputs, outputs)
 
     # Compile baseline classifier model
     model.compile(optimizer='rmsprop', loss='binary_crossentropy',
-                  weighted_metrics=[accuracy, binary_accuracy, precision, recall])
+                  weighted_metrics=[binary_accuracy, precision, recall])
 
     # Fit the models
     model.fit(x=train_tensors, epochs=100, validation_data=val_tensors,
@@ -130,4 +131,9 @@ for pipe in pipelines:
     # Clean up logging
     end = time.time()
     duration = '{0:.1f}'.format(end - start)
+    log_file = f'./logs/log{run_name}{time_str}'
+    lines = [f'Run name: {run_name}', f'Time taken: {duration}']
+    # Log the details in a text file
+    with open('log.txt', 'w') as f:
+        f.writelines('\n'.join(lines))
     print(f'Duration of pipeline: {duration} seconds')
