@@ -65,6 +65,48 @@ class VIFTransform(BaseEstimator, TransformerMixin):
         vif = self.vif
         return vif
 
+# Transformers
+class RemoveCorPairwiseTransform(BaseEstimator, TransformerMixin):
+    def __init__(self, threshold=0.9):
+        self.threshold = threshold
+        self.correlated_features = None
+        self.fit_transform_run = False
+        
+    def _calc_features(self, X):
+        col_corr = set()
+        corr_matrix = X.corr()
+        for i in range(len(corr_matrix.columns)):
+            for j in range(i):
+                if abs(corr_matrix.iloc[i, j]) > self.threshold:
+                    colname = corr_matrix.columns[i]
+                    col_corr.add(colname)
+        return col_corr
+        
+    def fit_transform(self, X, y=0):
+        X = X.copy()
+        self.correlated_features = self._calc_features(X)
+        # Drop the features
+        X = X.drop(self.correlated_features, axis=1)
+        # Update bool for run
+        self.fit_transform_run = True
+        return X.values
+        
+    def transform(self, X):
+        # Transform the data based on the 
+        if self.fit_transform_run:
+            X = X.copy()
+            X = X.drop(self.correlated_features, axis=1)
+            return X.values
+        else:
+            # If you haven't run fit_transform yet to the training data
+            raise Exception('Please run fit_transform on training data')
+        
+    def fit(self, X, y=0):
+        return self.fit_transform(X)
+    
+    def get_removed(self):
+        return self.correlated_features
+
 # Calculate class weights. Returns dict of class weights
 # Credit to Kannan from Advanced ML I, CQF
 def cwts(y):

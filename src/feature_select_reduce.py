@@ -58,13 +58,17 @@ recall = tf.keras.metrics.Recall()
 
 # Define the various feature selection methods
 rf = RandomForestClassifier(n_jobs=-1, class_weight=weights)
-vif = VIFTransform(threshold=10)
+vif = VIFTransform(threshold=5)
 boruta = BorutaPy(rf, n_estimators='auto', verbose=2)
 umap = UMAP(n_neighbors=10)
+corr = RemoveCorPairwiseTransform()
 
 # Define data pipelines
 pipelines = [
     'none',
+    Pipeline([('pairwisecorr', corr)], verbose=True),
+    Pipeline([('pairwisecorr', corr), ('boruta', boruta)], verbose=True),
+    Pipeline([('pairwisecorr', corr), ('boruta', boruta), ('umap', umap)], verbose=True),
     Pipeline([('vif', vif)], verbose=True),
     Pipeline([('vif', vif), ('boruta', boruta)], verbose=True),
     Pipeline([('boruta', boruta)], verbose=True),
