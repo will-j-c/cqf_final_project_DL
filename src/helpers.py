@@ -72,3 +72,10 @@ def cwts(y):
     w0=(1/c0)*(len(y))/2 
     w1=(1/c1)*(len(y))/2 
     return {0: w0, 1: w1}
+
+# Convert unix time from seconds to ms
+def convert_unix_to_ms(num):
+    num = str(num)
+    if len(num) != 13:
+        num += '000'
+    return int(num)
