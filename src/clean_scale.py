@@ -106,6 +106,9 @@ scalers_df.reset_index(inplace=True, drop=True)
 # Create the labels
 df['label'] = np.where(df['LOGRET_1'].shift(-1) > 0.005, 1, 0)
 
+# Save a copy
+df.to_csv('data/unscaled_clean_data.csv')
+
 # Split into features and labels
 y = df['label']
 X = df.drop('label', axis=1)

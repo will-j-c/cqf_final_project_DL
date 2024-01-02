@@ -120,7 +120,7 @@ for pipe in pipelines:
 
     # Baseline model
     inputs = tf.keras.Input(shape=(seqlen, featurelen))
-    x = tf.keras.layers.LSTM(36)(inputs, name=f'lstm{run_name}')
+    x = tf.keras.layers.LSTM(36, activation='relu', name=f'lstm{run_name}')(inputs)
     outputs = tf.keras.layers.Dense(units=1, activation='sigmoid', name=f'dense{run_name}')(x)
     model = tf.keras.Model(inputs, outputs)
 
@@ -135,9 +135,10 @@ for pipe in pipelines:
     # Clean up logging
     end = time.time()
     duration = '{0:.1f}'.format(end - start)
-    log_file = f'./logs/log{run_name}{time_str}'
-    lines = [f'Run name: {run_name}', f'Time taken: {duration}']
+    log_file = f'./logs/log{run_name}{time_str}.txt'
+    lines = [f'Run name: {run_name}', f'Time taken (seconds): {duration}', f'Pipeline params: {pipe}']
     # Log the details in a text file
-    with open('log.txt', 'w') as f:
+    with open(log_file, 'w') as f:
         f.writelines('\n'.join(lines))
+        model.summary(print_fn=f.write)
     print(f'Duration of pipeline: {duration} seconds')

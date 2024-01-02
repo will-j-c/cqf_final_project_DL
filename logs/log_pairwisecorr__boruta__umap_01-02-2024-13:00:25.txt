@@ -1,0 +1,15 @@
+Run name: _pairwisecorr__boruta__umap_
+Time taken (seconds): 193.4
+Pipeline params: Pipeline(steps=[('pairwisecorr', RemoveCorPairwiseTransform()),
+                ('boruta',
+                 BorutaPy(estimator=RandomForestClassifier(class_weight={0: 0.6200376915169612,
+                                                                         1: 2.582679172188806},
+                                                           n_estimators=56,
+                                                           n_jobs=-1,
+                                                           random_state=RandomState(MT19937) at 0x7475FA37AB40),
+                          n_estimators='auto',
+                          random_state=RandomState(MT19937) at 0x7475FA37AB40,
+                          verbose=2)),
+                ('umap',
+                 UMAP(n_neighbors=10, tqdm_kwds={'bar_format': '{desc}: {percentage:3.0f}%| {bar} {n_fmt}/{total_fmt} [{elapsed}]', 'desc': 'Epochs completed', 'disable': True}))],
+         verbose=True)Model: "model_3"_________________________________________________________________ Layer (type)                Output Shape              Param #   ================================================================= input_4 (InputLayer)        [(None, 1, 2)]            0                                                                           lstm_pairwisecorr__boruta_  (None, 36)                5616       _umap_ (LSTM)                                                                                                                     dense_pairwisecorr__boruta  (None, 1)                 37         __umap_ (Dense)                                                                                                                  =================================================================Total params: 5653 (22.08 KB)Trainable params: 5653 (22.08 KB)Non-trainable params: 0 (0.00 Byte)_________________________________________________________________

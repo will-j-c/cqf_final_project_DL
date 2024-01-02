@@ -5,3 +5,4 @@ src/__pycache__
 data/test
 data/train
 data/val
+data/unscaled_clean_data.csv
