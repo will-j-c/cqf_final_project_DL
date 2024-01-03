@@ -11,6 +11,7 @@ warnings.filterwarnings("ignore")
 from sklearn.preprocessing import OneHotEncoder, MinMaxScaler, RobustScaler
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
+from sklearn.feature_selection import VarianceThreshold
 
 # Load the raw price data
 df = pd.read_csv('data/raw/Gemini_ETHUSD_1h.csv', skiprows=[0])
@@ -59,6 +60,7 @@ df[feature_names] = onehot
 df.drop(['fg_value_classification', 'hour', 'day_of_week', 'month'], axis=1, inplace=True)
 
 # Clean the data
+
 # Drop all the columns with all NaN
 df = df.dropna(axis=1, how='all')
 # Remove columns that do not have at least 40000 of data
@@ -67,6 +69,9 @@ df = df.dropna(axis=1, thresh=40000)
 df.dropna(axis=0, inplace=True)
 # Remove VIDYA_14 (calculates to inf)
 df.drop('VIDYA_14', axis=1, inplace=True)
+# Take out columns with no variance (i.e. all the same value)
+vt = VarianceThreshold()
+df = pd.DataFrame(vt.fit_transform(df), columns=vt.get_feature_names_out(), index=df.index)
 
 # Compute the outliers
 # Calculate what columns have outliers based on a threshold
