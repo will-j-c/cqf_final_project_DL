@@ -107,11 +107,14 @@ min_max_df['scaler'] = 'MinMaxScaler'
 scalers_df = pd.concat([robust_df, min_max_df])
 scalers_df.sort_values('feature', inplace=True)
 scalers_df.reset_index(inplace=True, drop=True)
+scalers_df.set_index('scaler', drop=True, inplace=True)
+scalers_df.drop('outlier_count', axis=1, inplace=True)
 
 # Create the labels
 df['label'] = np.where(df['LOGRET_1'].shift(-1) > 0.005, 1, 0)
 
-# Save a copy
+# Save a copy of the unscaled data and outliers
+scalers_df.to_csv('static/scalers.csv')
 df.to_csv('data/unscaled_clean_data.csv')
 
 # Split into features and labels

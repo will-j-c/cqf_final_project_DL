@@ -9,11 +9,7 @@ import time
 import sys
 
 # Preprocessing
-from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
-
-# Metrics
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 # Feature selection
 from boruta import BorutaPy
@@ -96,14 +92,15 @@ for pipe in pipelines:
     
     # Log the output in a log file
     log_file = f'./logs/log{run_name}{time_str}.txt'
-    
+    modelpath = f'./models/feature_selection/model{run_name}{time_str}.keras'
     with open(log_file, 'w') as f:
         sys.stdout = f    
         print(f'Starting {run_name} run')
         # Callbacks
         callbacks = [
             tf.keras.callbacks.EarlyStopping(patience=5, monitor='val_precision'),
-            tf.keras.callbacks.TensorBoard(log_dir=filepath, histogram_freq=1)]
+            tf.keras.callbacks.TensorBoard(log_dir=filepath, histogram_freq=1),
+            tf.keras.callbacks.ModelCheckpoint(modelpath, monitor='val_precision', save_best_only=True, mode='max')]
 
         if pipe == 'none':
             X_train_pipe = X_train.copy()
@@ -118,12 +115,12 @@ for pipe in pipelines:
             X_val_pipe = pipe.transform(X_val)
 
         # Convert the output to tensors
-        seqlen = 1
+        seqlen = 6 # Number of time steps in the past to consider, the past day
         featurelen = X_train_pipe.shape[-1]
         train_tensors = tf.keras.utils.timeseries_dataset_from_array(
-            X_train_pipe, y_train, seqlen)
+            X_train_pipe, y_train.iloc[seqlen:], seqlen)
         val_tensors = tf.keras.utils.timeseries_dataset_from_array(
-            X_val_pipe, y_val, seqlen)
+            X_val_pipe, y_val.iloc[seqlen:], seqlen)
 
         # Baseline model
         inputs = tf.keras.Input(shape=(seqlen, featurelen))
