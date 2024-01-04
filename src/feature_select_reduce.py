@@ -56,7 +56,7 @@ recall = tf.keras.metrics.Recall()
 # Define the various feature selection methods
 rf = RandomForestClassifier(n_jobs=-1, class_weight=weights)
 vif = VIFTransform(threshold=5)
-boruta = BorutaPy(rf, n_estimators='auto', verbose=2)
+boruta = BorutaPy(rf, n_estimators='auto', verbose=2, perc=90)
 umap = UMAP(n_neighbors=10)
 corr = RemoveCorPairwiseTransform()
 
