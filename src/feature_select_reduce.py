@@ -91,14 +91,14 @@ for pipe in pipelines:
     filepath += time_str
     
     # Log the output in a log file
-    log_file = f'./logs/log{run_name}{time_str}.txt'
+    log_file = f'./logs/feature_selection/log{run_name}{time_str}.txt'
     modelpath = f'./models/feature_selection/model{run_name}{time_str}.keras'
     with open(log_file, 'w') as f:
         sys.stdout = f    
         print(f'Starting {run_name} run')
         # Callbacks
         callbacks = [
-            tf.keras.callbacks.EarlyStopping(patience=5, monitor='val_precision'),
+            tf.keras.callbacks.EarlyStopping(patience=5, monitor='val_precision', mode='max'),
             tf.keras.callbacks.TensorBoard(log_dir=filepath, histogram_freq=1),
             tf.keras.callbacks.ModelCheckpoint(modelpath, monitor='val_precision', save_best_only=True, mode='max')]
 
@@ -134,7 +134,7 @@ for pipe in pipelines:
                       weighted_metrics=[binary_accuracy, precision, recall])
 
         # Fit the models
-        model.fit(x=train_tensors, epochs=100, validation_data=val_tensors,
+        model.fit(x=train_tensors, epochs=1000, validation_data=val_tensors,
                   class_weight=weights, callbacks=callbacks)
 
         # Clean up logging

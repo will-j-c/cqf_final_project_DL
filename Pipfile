@@ -20,6 +20,7 @@ ta-lib = "*"
 tensorflow = {extras = ["and-cuda"], version = "*"}
 statsmodels = "*"
 boruta = "*"
+keras-tuner = "*"
 
 [dev-packages]
 ipykernel = "*"

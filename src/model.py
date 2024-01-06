@@ -1,23 +1,54 @@
-# Import tensorflow
-# Import tensorboard
-# Import keras tuner
-# Import the various scikit learn modules required
+# Import helps
+from helpers import *
 
-# Define the different models
-# UMAP
-# SOM
+# Import base
+import pandas as pd
+import numpy as np
+from datetime import datetime
+import time
+import sys
 
-# Define the hyperparameters to tune
+# Preprocessing
+from sklearn.pipeline import Pipeline
 
-# Define the callbacks
-# Early stopping
-# Tensorboard
+# Feature selection
+from boruta import BorutaPy
+from sklearn.ensemble import RandomForestClassifier
 
-# Consolidate the models into an array
+# Dimentionality reduction
+from umap import UMAP
 
-# Loop over the array
+# tensorflow
+import tensorflow as tf
 
-# Tune each model
+# Warnings
+import warnings
+warnings.filterwarnings("ignore")
 
-# Calculate the AUC and Confusion Matrix png and save it as an artifact to tensorboard
-# Log the computation time for each
+# Set seeds for reproducibility
+set_seeds()
+
+# Clear any backend
+tf.keras.backend.clear_session()
+
+# Reload the saved scaled data
+X_train = pd.read_csv('data/train/scaled_X_train.csv',
+                      parse_dates=True, index_col='unix')
+y_train = pd.read_csv('data/train/y_train.csv',
+                      parse_dates=True, index_col='unix')
+X_test = pd.read_csv('data/test/scaled_X_test.csv',
+                     parse_dates=True, index_col='unix')
+y_test = pd.read_csv('data/test/y_test.csv',
+                     parse_dates=True, index_col='unix')
+X_val = pd.read_csv('data/val/scaled_X_val.csv',
+                    parse_dates=True, index_col='unix')
+y_val = pd.read_csv('data/val/y_val.csv', parse_dates=True, index_col='unix')
+
+# Calculate the weights for the imbalanced classes
+y = pd.concat([y_train, y_val, y_test])
+weights = cwts(y.values.flatten())
+
+# Metrics
+binary_accuracy = tf.keras.metrics.BinaryAccuracy()
+precision = tf.keras.metrics.Precision()
+recall = tf.keras.metrics.Recall()
