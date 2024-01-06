@@ -92,52 +92,45 @@ for pipe in pipelines:
     
     # Log the output in a log file
     log_file = f'./logs/feature_selection/log{run_name}{time_str}.txt'
-    modelpath = f'./models/feature_selection/model{run_name}{time_str}.keras'
-    with open(log_file, 'w') as f:
-        sys.stdout = f    
-        print(f'Starting {run_name} run')
-        # Callbacks
-        callbacks = [
-            tf.keras.callbacks.EarlyStopping(patience=5, monitor='val_precision', mode='max'),
-            tf.keras.callbacks.TensorBoard(log_dir=filepath, histogram_freq=1),
-            tf.keras.callbacks.ModelCheckpoint(modelpath, monitor='val_precision', save_best_only=True, mode='max')]
-
-        if pipe == 'none':
-            X_train_pipe = X_train.copy()
-            X_val_pipe = X_val.copy()
-        # Create the output of the pipeline
-        # If Boruta is first (as it can't handle a df input)
-        elif list(pipe.named_steps.keys())[0] == 'boruta':
-            X_train_pipe = pipe.fit_transform(X_train.values, y_train.values.ravel())
-            X_val_pipe = pipe.transform(X_val.values)
-        else:
-            X_train_pipe = pipe.fit_transform(X_train, y_train.values.ravel())
-            X_val_pipe = pipe.transform(X_val)
-
-        # Convert the output to tensors
-        seqlen = 6 # Number of time steps in the past to consider, the past day
-        featurelen = X_train_pipe.shape[-1]
-        train_tensors = tf.keras.utils.timeseries_dataset_from_array(
-            X_train_pipe, y_train.iloc[seqlen:], seqlen)
-        val_tensors = tf.keras.utils.timeseries_dataset_from_array(
-            X_val_pipe, y_val.iloc[seqlen:], seqlen)
-
-        # Baseline model
-        inputs = tf.keras.Input(shape=(seqlen, featurelen))
-        x = tf.keras.layers.LSTM(36, activation='relu', name=f'lstm{run_name}')(inputs)
-        outputs = tf.keras.layers.Dense(units=1, activation='sigmoid', name=f'dense{run_name}')(x)
-        model = tf.keras.Model(inputs, outputs)
-        # Summary
-        model.summary()
-        # Compile baseline classifier model
-        model.compile(optimizer='rmsprop', loss='binary_crossentropy',
-                      weighted_metrics=[binary_accuracy, precision, recall])
-
-        # Fit the models
-        model.fit(x=train_tensors, epochs=1000, validation_data=val_tensors,
-                  class_weight=weights, callbacks=callbacks)
-
-        # Clean up logging
-        end = time.time()
-        duration = '{0:.1f}'.format(end - start)
-        print(f'Duration of pipeline: {duration} seconds')
+    modelpath = f'./models/feature_selection/model{run_name}{time_str}.keras' 
+    print(f'Starting {run_name} run')
+    # Callbacks
+    callbacks = [
+        tf.keras.callbacks.EarlyStopping(patience=5, monitor='val_precision', mode='max'),
+        tf.keras.callbacks.TensorBoard(log_dir=filepath, histogram_freq=1),
+        tf.keras.callbacks.ModelCheckpoint(modelpath, monitor='val_precision', save_best_only=True, mode='max')]
+    if pipe == 'none':
+        X_train_pipe = X_train.copy()
+        X_val_pipe = X_val.copy()
+    # Create the output of the pipeline
+    # If Boruta is first (as it can't handle a df input)
+    elif list(pipe.named_steps.keys())[0] == 'boruta':
+        X_train_pipe = pipe.fit_transform(X_train.values, y_train.values.ravel())
+        X_val_pipe = pipe.transform(X_val.values)
+    else:
+        X_train_pipe = pipe.fit_transform(X_train, y_train.values.ravel())
+        X_val_pipe = pipe.transform(X_val)
+    # Convert the output to tensors
+    seqlen = 6 # Number of time steps in the past to consider, the past day
+    featurelen = X_train_pipe.shape[-1]
+    train_tensors = tf.keras.utils.timeseries_dataset_from_array(
+        X_train_pipe, y_train.iloc[seqlen:], seqlen)
+    val_tensors = tf.keras.utils.timeseries_dataset_from_array(
+        X_val_pipe, y_val.iloc[seqlen:], seqlen)
+    # Baseline model
+    inputs = tf.keras.Input(shape=(seqlen, featurelen))
+    x = tf.keras.layers.LSTM(36, activation='relu', name=f'lstm{run_name}')(inputs)
+    outputs = tf.keras.layers.Dense(units=1, activation='sigmoid', name=f'dense{run_name}')(x)
+    model = tf.keras.Model(inputs, outputs)
+    # Summary
+    model.summary()
+    # Compile baseline classifier model
+    model.compile(optimizer='rmsprop', loss='binary_crossentropy',
+                  weighted_metrics=[binary_accuracy, precision, recall])
+    # Fit the models
+    model.fit(x=train_tensors, epochs=1000, validation_data=val_tensors,
+              class_weight=weights, callbacks=callbacks)
+    # Clean up logging
+    end = time.time()
+    duration = '{0:.1f}'.format(end - start)
+    print(f'Duration of pipeline: {duration} seconds')
