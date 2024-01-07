@@ -1,5 +1,5 @@
 # Import helps
-from src.helpers import *
+from helpers import *
 
 # Import base
 import pandas as pd
@@ -34,6 +34,10 @@ X_train = pd.read_csv('data/train/scaled_X_train.csv',
                       parse_dates=True, index_col='unix')
 y_train = pd.read_csv('data/train/y_train.csv',
                       parse_dates=True, index_col='unix')
+X_test = pd.read_csv('data/test/scaled_X_test.csv',
+                     parse_dates=True, index_col='unix')
+y_test = pd.read_csv('data/test/y_test.csv',
+                     parse_dates=True, index_col='unix')
 X_val = pd.read_csv('data/val/scaled_X_val.csv',
                     parse_dates=True, index_col='unix')
 y_val = pd.read_csv('data/val/y_val.csv', parse_dates=True, index_col='unix')
@@ -206,4 +210,4 @@ for model_func, name in models:
             'val_precision', direction='max'), max_epochs=30, overwrite=True, project_name=modelpath, seed=42)
 
         tuner.search(train_tensors, validation_data=val_tensors,
-                         callbacks=callbacks, epochs=1000, use_multiprocessing=True, workers=6)
+                         callbacks=callbacks, epochs=1000, class_weight=weights, use_multiprocessing=True, workers=6)

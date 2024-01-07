@@ -91,14 +91,13 @@ for pipe in pipelines:
     filepath += time_str
     
     # Log the output in a log file
-    log_file = f'./logs/feature_selection/log{run_name}{time_str}.txt'
     modelpath = f'./models/feature_selection/model{run_name}{time_str}.keras' 
     print(f'Starting {run_name} run')
     # Callbacks
     callbacks = [
-        tf.keras.callbacks.EarlyStopping(patience=5, monitor='val_precision', mode='max'),
+        tf.keras.callbacks.EarlyStopping(patience=5, monitor='val_binary_accuracy', mode='max'),
         tf.keras.callbacks.TensorBoard(log_dir=filepath, histogram_freq=1),
-        tf.keras.callbacks.ModelCheckpoint(modelpath, monitor='val_precision', save_best_only=True, mode='max')]
+        tf.keras.callbacks.ModelCheckpoint(modelpath, monitor='val_binary_accuracy', save_best_only=True, mode='max')]
     if pipe == 'none':
         X_train_pipe = X_train.copy()
         X_val_pipe = X_val.copy()
