@@ -95,7 +95,7 @@ for pipe in pipelines:
     print(f'Starting {run_name} run')
     # Callbacks
     callbacks = [
-        tf.keras.callbacks.EarlyStopping(patience=5, monitor='val_binary_accuracy', mode='max'),
+        tf.keras.callbacks.EarlyStopping(patience=10, monitor='val_binary_accuracy', mode='max'),
         tf.keras.callbacks.TensorBoard(log_dir=filepath, histogram_freq=1),
         tf.keras.callbacks.ModelCheckpoint(modelpath, monitor='val_binary_accuracy', save_best_only=True, mode='max')]
     if pipe == 'none':

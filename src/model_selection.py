@@ -52,10 +52,8 @@ precision = tf.keras.metrics.Precision()
 recall = tf.keras.metrics.Recall()
 
 # Run the pipeline
-vif = VIFTransform(threshold=5)
-rf = RandomForestClassifier(n_jobs=-1, class_weight=weights)
-boruta = BorutaPy(rf, n_estimators='auto', verbose=2, perc=90)
-pipe = Pipeline([('vif', vif), ('boruta', boruta)], verbose=True)
+corr = RemoveCorPairwiseTransform()
+pipe = Pipeline([('pairwisecorr', corr)], verbose=True)
 
 X_train_pipe = pipe.fit_transform(X_train, y_train.values.ravel())
 X_val_pipe = pipe.transform(X_val)
@@ -179,7 +177,7 @@ for model_func, name in models:
         # Define the callbacks
         callbacks = [
             tf.keras.callbacks.EarlyStopping(
-                patience=5, monitor='val_binary_accuracy', mode='max'),
+                patience=10, monitor='val_binary_accuracy', mode='max'),
             tf.keras.callbacks.TensorBoard(log_dir=filepath, histogram_freq=1),
             tf.keras.callbacks.ModelCheckpoint(modelpath, monitor='val_binary_accuracy', save_best_only=True, mode='max')]
 
