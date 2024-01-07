@@ -71,8 +71,9 @@ class IterableHyperModel(keras_tuner.HyperModel):
         # Define the hyperparameters
         # Units
         units_1 = hp.Int('units_1', min_value=16, max_value=512, step=16)
-        units_2 = hp.Int('units_2', min_value=16, max_value=512, step=16)
-
+        # units_2 = hp.Int('units_2', min_value=16, max_value=512, step=16)
+        # Learning rate
+        lr = hp.Float('learning_rate', min_value=0.05, max_value=0.5)
         # Optimizer
         hp_optimizer = hp.Choice('optimizer', ['adam', 'rmsprop', 'adagrad'])
         if hp_optimizer == 'adam':
@@ -85,22 +86,21 @@ class IterableHyperModel(keras_tuner.HyperModel):
         # Activations
         activation_1 = hp.Choice(
             'activation_1', ['relu', 'elu', 'tanh', 'sigmoid', 'selu'])
-        activation_2 = hp.Choice(
-            'activation_2', ['relu', 'elu', 'tanh', 'sigmoid', 'selu'])
+        # activation_2 = hp.Choice(
+        #     'activation_2', ['relu', 'elu', 'tanh', 'sigmoid', 'selu'])
 
 
-        model = self.model_func(self.inputs, units_1, units_2, optimizer, activation_1, activation_2)
+        model = self.model_func(self.inputs, units_1, optimizer, activation_1)
         return model
     
 # Begin defining models
 
 # Two layer model
-def two_layer(inputs, units_1, units_2, optimizer, activation_1, activation_2):
+def baseline(inputs, units_1, optimizer, activation_1):
             
     # Initialise layers
-    x = tf.keras.layers.LSTM(units_1, activation=activation_1, return_sequences=True, name=f'lstm-1-twolayer')(inputs)
-    x = tf.keras.layers.LSTM(units_2, activation=activation_2, name=f'lstm-2-twolayer')(x)
-    outputs = tf.keras.layers.Dense(units=1, activation='sigmoid', name=f'dense-twolayer')(x)
+    x = tf.keras.layers.LSTM(units_1, activation=activation_1, name=f'lstm-1-baseline')(inputs)
+    outputs = tf.keras.layers.Dense(units=1, activation='sigmoid', name=f'dense-baseline')(x)
     model = tf.keras.Model(inputs, outputs)
 
     # Compile model
@@ -110,7 +110,7 @@ def two_layer(inputs, units_1, units_2, optimizer, activation_1, activation_2):
 
 # Define the sequence length and reshape the data into the correct array
 seqlen = 1
-name = 'two_layer'
+name = 'baseline'
 
 # Define the tensors
 train_tensors = tf.keras.utils.timeseries_dataset_from_array(
@@ -133,7 +133,7 @@ callbacks = [
 
 # Initialise tuner and search
 
-tuner = keras_tuner.Hyperband(IterableHyperModel(inputs, two_layer), objective=keras_tuner.Objective(
+tuner = keras_tuner.Hyperband(IterableHyperModel(inputs, baseline), objective=keras_tuner.Objective(
     'val_binary_accuracy', direction='max'), max_epochs=35, overwrite=True, directory=modelpath, seed=42)
 
 tuner.search(train_tensors, validation_data=val_tensors,
