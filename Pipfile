@@ -21,6 +21,7 @@ tensorflow = {extras = ["and-cuda"], version = "*"}
 statsmodels = "*"
 boruta = "*"
 keras-tuner = "*"
+pydot = "*"
 
 [dev-packages]
 ipykernel = "*"
