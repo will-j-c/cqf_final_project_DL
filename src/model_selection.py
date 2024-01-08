@@ -181,7 +181,7 @@ for model_func, name in models:
             tf.keras.callbacks.TensorBoard(log_dir=filepath, histogram_freq=1),
             tf.keras.callbacks.ModelCheckpoint(modelpath, monitor='val_binary_accuracy', save_best_only=True, mode='max')]
 
-        # Initialise tuner and
+        # Initialise the model
         model = model_func(inputs)
 
         # Fit the models
