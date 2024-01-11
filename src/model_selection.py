@@ -13,6 +13,9 @@ from sklearn.pipeline import Pipeline
 from boruta import BorutaPy
 from sklearn.ensemble import RandomForestClassifier
 
+# Dimentionality reduction
+from umap import UMAP
+
 # tensorflow
 import tensorflow as tf
 
@@ -23,11 +26,12 @@ import keras_tuner
 import warnings
 warnings.filterwarnings('ignore')
 
-# Set seeds for reproducibility
-set_seeds()
-
 # Clear any backend
 tf.keras.backend.clear_session()
+
+# Set seeds for reproducibility
+tf.keras.utils.set_random_seed(42)
+tf.config.experimental.enable_op_determinism()
 
 # Reload the saved scaled data
 X_train = pd.read_csv('data/train/scaled_X_train.csv',
@@ -53,7 +57,10 @@ recall = tf.keras.metrics.Recall()
 
 # Run the pipeline
 corr = RemoveCorPairwiseTransform()
-pipe = Pipeline([('pairwisecorr', corr)], verbose=True)
+rf = RandomForestClassifier(n_jobs=-1, class_weight=weights)
+boruta = BorutaPy(rf, n_estimators='auto', verbose=2, perc=90)
+umap = UMAP(n_neighbors=10)
+pipe = Pipeline([('pairwisecorr', corr), ('boruta', boruta), ('umap', umap)], verbose=True)
 
 X_train_pipe = pipe.fit_transform(X_train, y_train.values.ravel())
 X_val_pipe = pipe.transform(X_val)
@@ -163,9 +170,9 @@ for model_func, name in models:
     for seqlen in seqlens:
         # Define the tensors
         train_tensors = tf.keras.utils.timeseries_dataset_from_array(
-            X_train_pipe, y_train.iloc[seqlen:], seqlen)
+            X_train_pipe, y_train.iloc[seqlen-1:], seqlen)
         val_tensors = tf.keras.utils.timeseries_dataset_from_array(
-            X_val_pipe, y_val.iloc[seqlen:], seqlen)
+            X_val_pipe, y_val.iloc[seqlen-1:], seqlen)
 
         # Define the input
         inputs = tf.keras.Input(shape=(seqlen, featurelen))
@@ -178,8 +185,7 @@ for model_func, name in models:
         callbacks = [
             tf.keras.callbacks.EarlyStopping(
                 patience=10, monitor='val_binary_accuracy', mode='max'),
-            tf.keras.callbacks.TensorBoard(log_dir=filepath, histogram_freq=1),
-            tf.keras.callbacks.ModelCheckpoint(modelpath, monitor='val_binary_accuracy', save_best_only=True, mode='max')]
+            tf.keras.callbacks.TensorBoard(log_dir=filepath, histogram_freq=1)]
 
         # Initialise the model
         model = model_func(inputs)

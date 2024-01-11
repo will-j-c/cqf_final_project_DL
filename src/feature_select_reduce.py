@@ -3,10 +3,8 @@ from helpers import *
 
 # Import base
 import pandas as pd
-import numpy as np
 from datetime import datetime
 import time
-import sys
 
 # Preprocessing
 from sklearn.pipeline import Pipeline
@@ -25,11 +23,12 @@ import tensorflow as tf
 import warnings
 warnings.filterwarnings("ignore")
 
-# Set seeds for reproducibility
-set_seeds()
-
 # Clear any backend
 tf.keras.backend.clear_session()
+
+# Set seeds for reproducibility
+tf.keras.utils.set_random_seed(42)
+tf.config.experimental.enable_op_determinism()
 
 # Reload the saved scaled data
 X_train = pd.read_csv('data/train/scaled_X_train.csv',
@@ -96,8 +95,8 @@ for pipe in pipelines:
     # Callbacks
     callbacks = [
         tf.keras.callbacks.EarlyStopping(patience=10, monitor='val_binary_accuracy', mode='max'),
-        tf.keras.callbacks.TensorBoard(log_dir=filepath, histogram_freq=1),
-        tf.keras.callbacks.ModelCheckpoint(modelpath, monitor='val_binary_accuracy', save_best_only=True, mode='max')]
+        tf.keras.callbacks.TensorBoard(log_dir=filepath, histogram_freq=1)]
+    
     if pipe == 'none':
         X_train_pipe = X_train.copy()
         X_val_pipe = X_val.copy()
@@ -109,26 +108,29 @@ for pipe in pipelines:
     else:
         X_train_pipe = pipe.fit_transform(X_train, y_train.values.ravel())
         X_val_pipe = pipe.transform(X_val)
+    
     # Convert the output to tensors
     seqlen = 6 # Number of time steps in the past to consider, the past day
     featurelen = X_train_pipe.shape[-1]
     train_tensors = tf.keras.utils.timeseries_dataset_from_array(
-        X_train_pipe, y_train.iloc[seqlen:], seqlen)
+        X_train_pipe, y_train.iloc[seqlen-1:], seqlen)
     val_tensors = tf.keras.utils.timeseries_dataset_from_array(
-        X_val_pipe, y_val.iloc[seqlen:], seqlen)
+        X_val_pipe, y_val.iloc[seqlen-1:], seqlen)
+    
     # Baseline model
     inputs = tf.keras.Input(shape=(seqlen, featurelen))
     x = tf.keras.layers.LSTM(36, activation='relu', name=f'lstm{run_name}')(inputs)
     outputs = tf.keras.layers.Dense(units=1, activation='sigmoid', name=f'dense{run_name}')(x)
     model = tf.keras.Model(inputs, outputs)
-    # Summary
-    model.summary()
+    
     # Compile baseline classifier model
     model.compile(optimizer='rmsprop', loss='binary_crossentropy',
                   weighted_metrics=[binary_accuracy, precision, recall])
+    
     # Fit the models
     model.fit(x=train_tensors, epochs=1000, validation_data=val_tensors,
               class_weight=weights, callbacks=callbacks)
+    
     # Clean up logging
     end = time.time()
     duration = '{0:.1f}'.format(end - start)
