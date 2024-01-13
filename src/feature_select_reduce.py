@@ -135,3 +135,6 @@ for pipe in pipelines:
     end = time.time()
     duration = '{0:.1f}'.format(end - start)
     print(f'Duration of pipeline: {duration} seconds')
+    # Save the baseline model only once
+    if pipe == 'none':
+        model.save(f'./models/baseline_model_{time_str}.keras')

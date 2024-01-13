@@ -3,8 +3,7 @@ from helpers import *
 
 # Import base
 import pandas as pd
-import numpy as np
-import sys
+from datetime import datetime
 
 # Preprocessing
 from sklearn.pipeline import Pipeline
@@ -108,13 +107,12 @@ class IterableHyperModel(keras_tuner.HyperModel):
 
 # Begin defining models
 # Three mayer model with dropout
-def three_layer_dropout(inputs, units_1, units_2, units_3, dr, optimizer, activation_1, activation_2, activation_3):
+def two_layer_dropout(inputs, units_1, units_2, units_3, dr, optimizer, activation_1, activation_2, activation_3):
             
     # Initialise layers
-    x = tf.keras.layers.LSTM(units=units_1, activation=activation_1, dropout=dr, recurrent_dropout=dr,return_sequences=True, name='lstm-1-threelayer-dropout')(inputs)
-    x = tf.keras.layers.LSTM(units=units_2, activation=activation_2, dropout=dr, recurrent_dropout=dr, return_sequences=True, name='lstm-2-threelayer-dropout')(x)
-    x = tf.keras.layers.LSTM(units=units_3, activation=activation_3, dropout=dr, recurrent_dropout=dr,name='lstm-3-threelayer-dropout')(x)
-    outputs = tf.keras.layers.Dense(units=1, activation='sigmoid', name='dense-threelayer-dropout')(x)
+    x = tf.keras.layers.LSTM(units=units_1, activation=activation_1, dropout=dr, recurrent_dropout=dr,return_sequences=True, name='lstm-1-twolayer-dropout')(inputs)
+    x = tf.keras.layers.LSTM(units=units_2, activation=activation_2, dropout=dr, recurrent_dropout=dr,name='lstm-3-twolayer-dropout')(x)
+    outputs = tf.keras.layers.Dense(units=1, activation='sigmoid', name='dense-twolayer-dropout')(x)
     model = tf.keras.Model(inputs, outputs)
 
     # Compile model
@@ -125,7 +123,7 @@ def three_layer_dropout(inputs, units_1, units_2, units_3, dr, optimizer, activa
 
 # Define the sequence length and reshape the data into the correct array
 seqlen = 1
-name = 'three_layer_dropout'
+name = 'two_layer_dropout'
 
 # Define the tensors
 train_tensors = tf.keras.utils.timeseries_dataset_from_array(
@@ -138,19 +136,21 @@ inputs = tf.keras.Input(shape=(seqlen, featurelen))
 
 # Define the file paths
 filepath = f'./tensorboard/model_tuning/{name}_{seqlen}_hour'
-modelpath = f'./models/model_tuning/{name}_{seqlen}_hour'
+project_path = f'./models/model_tuning/'
 
 # Define the callbacks
 callbacks = [
     tf.keras.callbacks.EarlyStopping(
         patience=10, monitor='val_binary_accuracy', mode='max'),
-    tf.keras.callbacks.TensorBoard(log_dir=filepath, histogram_freq=1),
-    tf.keras.callbacks.ModelCheckpoint(modelpath, monitor='val_binary_accuracy', save_best_only=True, mode='max')]
+    tf.keras.callbacks.TensorBoard(log_dir=filepath)]
 
 # Initialise tuner and search
-
-tuner = keras_tuner.Hyperband(IterableHyperModel(inputs, three_layer_dropout), objective=keras_tuner.Objective(
-    'val_binary_accuracy', direction='max'), max_epochs=30, overwrite=True, directory=modelpath, seed=42, project_name=f'{name}_{seqlen}_hour')
+tuner = keras_tuner.Hyperband(IterableHyperModel(inputs, two_layer_dropout), objective=keras_tuner.Objective(
+    'val_binary_accuracy', direction='max'), max_epochs=30, seed=42, directory=project_path, project_name=f'{name}_{seqlen}_hour')
 
 tuner.search(train_tensors, validation_data=val_tensors,
-             callbacks=callbacks, epochs=1000, class_weight=weights, use_multiprocessing=True, workers=6)
+             callbacks=callbacks, epochs=1000, class_weight=weights)
+
+model = tuner.get_best_models(num_models=1)[0]
+time_str = datetime.now().strftime('%m-%d-%Y-%H:%M:%S')
+model.save(f'./models/final_model_{time_str}.keras')
