@@ -1,7 +1,11 @@
+import matplotlib.pyplot as plt
+
 class BaseStrategyBacktest:
-    def __init__(self, returns_df, predictions):
+    def __init__(self, returns_df, predictions, val_start, test_start):
         self.returns_df = returns_df
         self.predictions = predictions
+        self.val_start = val_start
+        self.test_start = test_start
         self.results = self._assemble_df()
     
     def _assemble_df(self):
@@ -15,12 +19,22 @@ class BaseStrategyBacktest:
         pass
     
     def plot(self):
-        self.results[['long_only_hold', 'strategy_return']].plot()
+        train_results = self.results[:self.val_start]
+        val_results = self.results[self.val_start:self.test_start]
+        test_results = self.results[self.test_start:]
+        plt.plot(self.results['long_only_hold'], label='long_only_hold')
+        plt.plot(train_results['strategy_return'], label='strategy_return_train_data')
+        plt.plot(val_results['strategy_return'], c='y', label='strategy_return_val_data')
+        plt.plot(test_results['strategy_return'], c='r', label='strategy_return_test_data')
+        plt.ylabel('Return')
+        plt.xlabel('Date')
+        plt.legend()
+        plt.show()
         return
     
 class LongOnlyBacktest(BaseStrategyBacktest):
-    def __init__(self, returns_df, predictions):
-        super().__init__(returns_df, predictions)
+    def __init__(self, returns_df, predictions, val_start, test_start):
+        super().__init__(returns_df, predictions, val_start, test_start)
         self._process_signals()
         
     def _process_signals(self):
