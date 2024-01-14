@@ -2,6 +2,7 @@
 from helpers import *
 import pandas as pd
 import pandas_ta as ta
+import tensorflow as tf
 
 # Warnings
 import warnings
@@ -12,6 +13,10 @@ from sklearn.preprocessing import OneHotEncoder, MinMaxScaler, RobustScaler
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
 from sklearn.feature_selection import VarianceThreshold
+
+# Set seeds for reproducibility
+tf.keras.utils.set_random_seed(42)
+tf.config.experimental.enable_op_determinism()
 
 # Load the raw price data
 df = pd.read_csv('data/raw/Gemini_ETHUSD_1h.csv', skiprows=[0])

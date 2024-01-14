@@ -4,6 +4,7 @@ from helpers import *
 # Import base
 import pandas as pd
 from datetime import datetime
+import glob
 
 # Preprocessing
 from sklearn.pipeline import Pipeline
@@ -24,6 +25,18 @@ import keras_tuner
 # Warnings
 import warnings
 warnings.filterwarnings('ignore')
+
+# Tidy up all the folders first
+delete_all('./tensorboard/model_tuning')
+delete_all('./models/model_tuning')
+
+# Delete the baseline model
+try:
+    model_to_remove = glob.glob('./models/final_model_*.keras')[0]
+    os.rmdir('./models/model_tuning')
+    os.unlink(model_to_remove)
+except IndexError:
+    pass
 
 # Clear any backend
 tf.keras.backend.clear_session()
@@ -81,19 +94,17 @@ class IterableHyperModel(keras_tuner.HyperModel):
         units_1 = hp.Int('units_1', min_value=16, max_value=512, step=16)
         units_2 = hp.Int('units_2', min_value=16, max_value=512, step=16)
         units_3 = hp.Int('units_3', min_value=16, max_value=512, step=16)
-        # Learning rate
-        lr = hp.Float('learning_rate', min_value=0.05, max_value=0.5)
+        
         # Dropout rate
         dr = hp.Float('dropout_rate', min_value=0.01, max_value=0.8)
-        # Optimizer
-        hp_optimizer = hp.Choice('optimizer', ['adam', 'rmsprop', 'adagrad'])
-        if hp_optimizer == 'adam':
-            optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
-        elif hp_optimizer == 'rmsprop':
-            optimizer = tf.keras.optimizers.RMSprop(learning_rate=lr)
-        elif hp_optimizer == 'adagrad':
-            optimizer = tf.keras.optimizers.Adagrad(learning_rate=lr)
-
+        
+        # Adam optimizer
+        # Learning rate
+        lr = hp.Float('learning_rate', min_value=0.0005, max_value=0.)
+        beta_1 = hp.Float('learning_rate', min_value=0.5, max_value=0.99)
+        beta_2 = hp.Float('learning_rate', min_value=0.5, max_value=0.9999)
+        optimizer = tf.keras.optimizers.Adam(learning_rate=lr, beta_1=beta_1, beta_2=beta_2)
+        
         # Activations
         activation_1 = hp.Choice(
             'activation_1', ['relu', 'elu', 'tanh', 'sigmoid', 'selu'])
@@ -116,8 +127,7 @@ def two_layer_dropout(inputs, units_1, units_2, units_3, dr, optimizer, activati
     model = tf.keras.Model(inputs, outputs)
 
     # Compile model
-    model.compile(optimizer=optimizer, loss='binary_crossentropy',
-                      weighted_metrics=[binary_accuracy, precision, recall])
+    model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=[binary_accuracy, precision, recall])
     return model
 
 
@@ -141,12 +151,12 @@ project_path = f'./models/model_tuning/'
 # Define the callbacks
 callbacks = [
     tf.keras.callbacks.EarlyStopping(
-        patience=10, monitor='val_binary_accuracy', mode='max'),
+        patience=10, monitor='val_precision', mode='max'),
     tf.keras.callbacks.TensorBoard(log_dir=filepath)]
 
 # Initialise tuner and search
 tuner = keras_tuner.Hyperband(IterableHyperModel(inputs, two_layer_dropout), objective=keras_tuner.Objective(
-    'val_binary_accuracy', direction='max'), max_epochs=30, seed=42, directory=project_path, project_name=f'{name}_{seqlen}_hour')
+    'val_precision', direction='max'), max_epochs=30, seed=42, directory=project_path, project_name=f'{name}_{seqlen}_hour')
 
 tuner.search(train_tensors, validation_data=val_tensors,
              callbacks=callbacks, epochs=1000, class_weight=weights)

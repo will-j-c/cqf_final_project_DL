@@ -19,12 +19,12 @@ from umap import UMAP
 # tensorflow
 import tensorflow as tf
 
-# Keras tuner
-import keras_tuner
-
 # Warnings
 import warnings
 warnings.filterwarnings('ignore')
+
+# Tidy up all the folders first
+delete_all('./tensorboard/model_testing')
 
 # Clear any backend
 tf.keras.backend.clear_session()
@@ -78,21 +78,19 @@ def baseline(inputs):
     model = tf.keras.Model(inputs, outputs)
 
     # Compile model
-    model.compile(optimizer='rmsprop', loss='binary_crossentropy',
-                      weighted_metrics=[binary_accuracy, precision, recall])
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=[binary_accuracy, precision, recall])
     return model
 
 # Baseline model
 def baseline_dropout(inputs):
             
     # Initialise layers
-    x = tf.keras.layers.LSTM(units=36, activation='relu', dropout=0.5, recurrent_dropout=0.5, name=f'lstm-baseline-dropout')(inputs)
+    x = tf.keras.layers.LSTM(units=36, activation='relu', recurrent_dropout=0.5, name=f'lstm-baseline-dropout')(inputs)
     outputs = tf.keras.layers.Dense(units=1, activation='sigmoid', name=f'dense-baseline-dropout')(x)
     model = tf.keras.Model(inputs, outputs)
 
     # Compile model
-    model.compile(optimizer='rmsprop', loss='binary_crossentropy',
-                      weighted_metrics=[binary_accuracy, precision, recall])
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=[binary_accuracy, precision, recall])
     return model
 
 # Two layer model
@@ -105,22 +103,20 @@ def two_layer(inputs):
     model = tf.keras.Model(inputs, outputs)
 
     # Compile model
-    model.compile(optimizer='rmsprop', loss='binary_crossentropy',
-                      weighted_metrics=[binary_accuracy, precision, recall])
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=[binary_accuracy, precision, recall])
     return model
 
 # Two layer model with dropout
 def two_layer_dropout(inputs):
             
     # Initialise layers
-    x = tf.keras.layers.LSTM(units=36, activation='relu', dropout=0.5, recurrent_dropout=0.5,return_sequences=True, name=f'lstm-1-twolayer-dropout')(inputs)
-    x = tf.keras.layers.LSTM(units=36, activation='relu', dropout=0.5, recurrent_dropout=0.5,name=f'lstm-2-twolayer-dropout')(x)
+    x = tf.keras.layers.LSTM(units=36, activation='relu', recurrent_dropout=0.5,return_sequences=True, name=f'lstm-1-twolayer-dropout')(inputs)
+    x = tf.keras.layers.LSTM(units=36, activation='relu', recurrent_dropout=0.5,name=f'lstm-2-twolayer-dropout')(x)
     outputs = tf.keras.layers.Dense(units=1, activation='sigmoid', name=f'dense-twolayer-dropout')(x)
     model = tf.keras.Model(inputs, outputs)
 
     # Compile model
-    model.compile(optimizer='rmsprop', loss='binary_crossentropy',
-                      weighted_metrics=[binary_accuracy, precision, recall])
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=[binary_accuracy, precision, recall])
     return model
 
 # Three layer model
@@ -134,23 +130,21 @@ def three_layer(inputs):
     model = tf.keras.Model(inputs, outputs)
 
     # Compile model
-    model.compile(optimizer='rmsprop', loss='binary_crossentropy',
-                      weighted_metrics=[binary_accuracy, precision, recall])
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=[binary_accuracy, precision, recall])
     return model
 
 # Three mayer model with dropout
 def three_layer_dropout(inputs):
             
     # Initialise layers
-    x = tf.keras.layers.LSTM(units=36, activation='relu', dropout=0.5, recurrent_dropout=0.5,return_sequences=True, name=f'lstm-1-threelayer-dropout')(inputs)
-    x = tf.keras.layers.LSTM(units=36, activation='relu', dropout=0.5, recurrent_dropout=0.5, return_sequences=True, name=f'lstm-2-threelayer-dropout')(x)
-    x = tf.keras.layers.LSTM(units=36, activation='relu', dropout=0.5, recurrent_dropout=0.5,name=f'lstm-3-threelayer-dropout')(x)
+    x = tf.keras.layers.LSTM(units=36, activation='relu', recurrent_dropout=0.5,return_sequences=True, name=f'lstm-1-threelayer-dropout')(inputs)
+    x = tf.keras.layers.LSTM(units=36, activation='relu', recurrent_dropout=0.5, return_sequences=True, name=f'lstm-2-threelayer-dropout')(x)
+    x = tf.keras.layers.LSTM(units=36, activation='relu', recurrent_dropout=0.5,name=f'lstm-3-threelayer-dropout')(x)
     outputs = tf.keras.layers.Dense(units=1, activation='sigmoid', name=f'dense-threelayer-dropout')(x)
     model = tf.keras.Model(inputs, outputs)
 
     # Compile model
-    model.compile(optimizer='rmsprop', loss='binary_crossentropy',
-                      weighted_metrics=[binary_accuracy, precision, recall])
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=[binary_accuracy, precision, recall])
     return model
 
 # Collect the models into an array

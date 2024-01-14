@@ -5,6 +5,7 @@ from helpers import *
 import pandas as pd
 from datetime import datetime
 import time
+import glob
 
 # Preprocessing
 from sklearn.pipeline import Pipeline
@@ -22,6 +23,15 @@ import tensorflow as tf
 # Warnings
 import warnings
 warnings.filterwarnings("ignore")
+
+# Tidy up all the folders first
+delete_all('./tensorboard/feature_selection')
+# Delete the baseline model
+try:
+    model_to_remove = glob.glob('./models/baseline_model_*.keras')[0]
+    os.unlink(model_to_remove)
+except IndexError:
+    pass
 
 # Clear any backend
 tf.keras.backend.clear_session()
@@ -124,8 +134,7 @@ for pipe in pipelines:
     model = tf.keras.Model(inputs, outputs)
     
     # Compile baseline classifier model
-    model.compile(optimizer='rmsprop', loss='binary_crossentropy',
-                  weighted_metrics=[binary_accuracy, precision, recall])
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=[binary_accuracy, precision, recall])
     
     # Fit the models
     model.fit(x=train_tensors, epochs=1000, validation_data=val_tensors,
@@ -138,3 +147,4 @@ for pipe in pipelines:
     # Save the baseline model only once
     if pipe == 'none':
         model.save(f'./models/baseline_model_{time_str}.keras')
+        

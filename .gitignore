@@ -1,8 +1,10 @@
 .env
 src/__pycache__
+.keras
 
 # Large data files
 data/test
 data/train
 data/val
 data/unscaled_clean_data.csv
+models/model_tuning

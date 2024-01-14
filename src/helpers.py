@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from statsmodels.stats.outliers_influence import variance_inflation_factor
+import os
+import shutil
 
 
 # Reproducibility
@@ -121,3 +123,15 @@ def convert_unix_to_ms(num):
     if len(num) != 13:
         num += '000'
     return int(num)
+
+# Delete all files and folders in a folder
+def delete_all(folder):
+    for filename in os.listdir(folder):
+        file_path = os.path.join(folder, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))

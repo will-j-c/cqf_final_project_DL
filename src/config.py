@@ -4,6 +4,8 @@ from src.helpers import *
 from src.strategy import *
 
 # Base
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import pandas as pd
 pd.set_option('display.max_columns', 500, 'display.max_row', 500)
 import numpy as np
