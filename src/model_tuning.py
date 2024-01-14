@@ -67,12 +67,11 @@ binary_accuracy = tf.keras.metrics.BinaryAccuracy()
 precision = tf.keras.metrics.Precision()
 recall = tf.keras.metrics.Recall()
 
-# Run the pipeline
-corr = RemoveCorPairwiseTransform()
-rf = RandomForestClassifier(n_jobs=-1, class_weight=weights)
-boruta = BorutaPy(rf, n_estimators='auto', verbose=2, perc=90)
+# Define the various feature selection methods
+vif = VIFTransform(threshold=5)
 umap = UMAP(n_neighbors=10)
-pipe = Pipeline([('pairwisecorr', corr), ('boruta', boruta), ('umap', umap)], verbose=True)
+
+pipe = Pipeline([('vif', vif), ('umap', umap)], verbose=True)
 
 X_train_pipe = pipe.fit_transform(X_train, y_train.values.ravel())
 X_val_pipe = pipe.transform(X_val)
