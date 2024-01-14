@@ -1,4 +1,4 @@
-# Will Colgate CQF Final Assignment
+# CQF Final Assignment June 2023 Cohort
 
 ### Package Installation
 
@@ -26,23 +26,63 @@ Install the requirements as normal
 
 ### Workflow
 
-Due to filesizes, it is best to regenerate the files used from the raw data.
+##### Clone from GitHub
 
-1.  From the working directory, run `python3 src/clean_scale.py`
+1. `git clone https://github.com/will-j-c/cqf_final_project_DL.git`
+2. Installation following the instructions above
+3. cd into working directory
+4. Run `python3 src/clean_scale.py`
 
-### File Descriptions
+##### Fresh run of entire workflow
 
-#### clean_scale.py
+1. Install dependencies as per above
+2. Run `python3 main.py`
 
-#### feature_select_reduce.py
+Note that the entire script will take several hours to run, depending on the hardware that you are running it on.
 
-#### greed_fear_index.py
+### Main File Descriptions
 
-#### greed_fear_index.py
+##### report.ipynb
 
-#### greed_fear_index.py
+This is the main jupyter notebook report. It will run assuming the installation instructions have been followed or the instructor is running the code as submitted to the institute.
 
-#### download.py (not used but kept for reference)
+##### clean_scale.py
+
+This script imports the raw data from `data/raw/Gemini_ETHUSD_1h.csv`, engineers features using `pandas-ta`, adds temporal data, cleans the dataframe and scales the data according to outliers.
+
+##### feature_select_reduce.py
+
+This script establishes several different pipelines dealing with collinearity, algorithmic feature selection and dimensionality reduction and tests these pipelines against a baseline `keras` model.
+
+##### model_selection.py
+
+This script defines 6 different models discussed in the report and tests them with various look back periods after running the pipeline chosen in `feature_select_reduce.py`.
+
+##### model_tuning.py
+
+This script takes the selected best model produced in `model_selection.py` and uses Keras Tuner to tune the hyperparameters. 
+
+##### helpers.py
+
+Contains a number of helper classes and functions that are used in various places.
+
+##### plots.py
+
+Contains code for various plots that have been reused in numerous places.
+
+##### strategy.py
+
+This file contains a BaseStrategyBacktest class, with standard functionality and plotting for any strategy and a LongOnlyBacktest class which inherits from the BaseStrategyBacktest but extends it with logic that processes the signals from the model predictions. The file was designed this way so that further strategies could be implemented in the future.
+
+##### config.py
+
+Contains all the standard imports to be imported into the notebook.
+
+##### greed_fear_index.py
+
+A script that calls the api for the fear and greed index, cleans the data and saves it to a csv.
+
+##### download.py (not used but kept for reference)
 
 You can download data using `yfinance` by running this script with the ticker, period and interval that you want to download.
 
