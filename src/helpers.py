@@ -6,7 +6,9 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 import os
 import shutil
-
+import glob
+# Clear any backend
+tf.keras.backend.clear_session()
 
 # Reproducibility
 def set_seeds(seed=42): 
@@ -135,3 +137,88 @@ def delete_all(folder):
                 shutil.rmtree(file_path)
         except Exception as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+# Collect tensorboard max scalers into a dataframe          
+def present_tensorboard_logs(stage='feature_selection'):
+    # Create dict of values
+    df_dict = {
+        'run_name': [],
+        'max_binary_accuracy': [],
+        'max_binary_accuracy_epoch': [],
+        'max_precision': [],
+        'max_precision_epoch': [],
+        'max_recall': [],
+        'max_recall_epoch': [],
+        'max_f1': [],
+        'max_f1_epoch': []
+    }
+
+    if stage == 'feature_selection':
+    # Collect the validation filepaths
+        filepaths = glob.glob('./tensorboard/feature_selection/*/validation/*')
+    elif stage == 'model_selection':
+        filepaths = glob.glob('./tensorboard/model_testing/*/validation/*')
+    elif stage == 'model_tuning':
+        filepaths = glob.glob('./tensorboard/model_tuning/*/*/*/validation/*')
+
+    # Iterate over the filepaths
+    for filepath in filepaths:
+        if stage == 'model_tuning':
+            string_arr = run_name = filepath.split('/')
+            run_name = f'{string_arr[3]}_{string_arr[4]}'
+        else:
+            run_name = filepath.split('/')[3]
+        # Set the empty arrays
+        epoch_binary_accuracy_arr = []
+        epoch_precision_arr = []
+        epoch_recall_arr = []
+        epoch_f1_arr = []
+
+        # Initialise tf iterator to iterate over the log file
+        for event in tf.compat.v1.train.summary_iterator(filepath):
+            for value in event.summary.value:
+                if value.tag == 'epoch_binary_accuracy':
+                    num = tf.make_ndarray(value.tensor).ravel()[0]
+                    epoch_binary_accuracy_arr.append(num)
+                elif value.tag == 'epoch_precision':
+                    num = tf.make_ndarray(value.tensor).ravel()[0]
+                    epoch_precision_arr.append(num)
+                elif value.tag == 'epoch_recall':
+                    num = tf.make_ndarray(value.tensor).ravel()[0]
+                    epoch_recall_arr.append(num)
+
+        # Compute max and epoch max
+        epoch_binary_accuracy_max = np.max(epoch_binary_accuracy_arr)
+        epoch_binary_accuracy_max_epoch = epoch_binary_accuracy_arr.index(epoch_binary_accuracy_max)
+        epoch_precision_max = np.max(epoch_precision_arr)
+        epoch_precision_max_epoch = epoch_precision_arr.index(epoch_precision_max)
+        epoch_recall_max = np.max(epoch_recall_arr)
+        epoch_recall_max_epoch = epoch_recall_arr.index(epoch_recall_max)
+        
+        # Compute F1 score for each epoch and select the max and the epoch it relates to
+        for precision, recall in zip(epoch_precision_arr, epoch_recall_arr):
+            f1_score = 2 * (precision * recall) / (precision + recall)
+            if np.isnan(f1_score):
+                epoch_f1_arr.append(0)
+            else:
+                epoch_f1_arr.append(f1_score)
+
+        epoch_f1_max = np.max(epoch_f1_arr)
+        epoch_f1_max_epoch = epoch_f1_arr.index(epoch_f1_max)
+        
+        # Update dict
+        df_dict['run_name'].append(run_name)
+        df_dict['max_binary_accuracy'].append(epoch_binary_accuracy_max)
+        df_dict['max_binary_accuracy_epoch'].append(epoch_binary_accuracy_max_epoch)
+        df_dict['max_precision'].append(epoch_precision_max)
+        df_dict['max_precision_epoch'].append(epoch_precision_max_epoch)
+        df_dict['max_recall'].append(epoch_recall_max)
+        df_dict['max_recall_epoch'].append(epoch_recall_max_epoch)
+        df_dict['max_f1'].append(epoch_f1_max)
+        df_dict['max_f1_epoch'].append(epoch_f1_max_epoch)
+
+    # Create dataframe
+    df = pd.DataFrame.from_dict(df_dict)
+    df.set_index('run_name', inplace=True)
+    df.sort_values('max_f1', ascending=False, inplace=True)
+    return df

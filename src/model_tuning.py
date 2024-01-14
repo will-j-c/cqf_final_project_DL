@@ -28,9 +28,9 @@ warnings.filterwarnings('ignore')
 
 # Tidy up all the folders first
 delete_all('./tensorboard/model_tuning')
-delete_all('./models/model_tuning')
+delete_all('./models/final_models')
 
-# Delete the baseline model
+# Delete the previous final model
 try:
     model_to_remove = glob.glob('./models/final_model_*.keras')[0]
     os.rmdir('./models/model_tuning')
@@ -120,9 +120,8 @@ class IterableHyperModel(keras_tuner.HyperModel):
 def two_layer_dropout(inputs, units_1, units_2, units_3, dr, optimizer, activation_1, activation_2, activation_3):
             
     # Initialise layers
-    x = tf.keras.layers.LSTM(units=units_1, activation=activation_1, dropout=dr, recurrent_dropout=dr,return_sequences=True, name='lstm-1-twolayer-dropout')(inputs)
-    x = tf.keras.layers.LSTM(units=units_2, activation=activation_2, dropout=dr, recurrent_dropout=dr,name='lstm-3-twolayer-dropout')(x)
-    outputs = tf.keras.layers.Dense(units=1, activation='sigmoid', name='dense-twolayer-dropout')(x)
+    x = tf.keras.layers.LSTM(units=units_1, activation=activation_1, name=f'lstm-baseline')(inputs)
+    outputs = tf.keras.layers.Dense(units=1, activation='sigmoid', name=f'dense-baseline')(x)
     model = tf.keras.Model(inputs, outputs)
 
     # Compile model
@@ -131,8 +130,8 @@ def two_layer_dropout(inputs, units_1, units_2, units_3, dr, optimizer, activati
 
 
 # Define the sequence length and reshape the data into the correct array
-seqlen = 1
-name = 'two_layer_dropout'
+seqlen = 24
+name = 'baseline'
 
 # Define the tensors
 train_tensors = tf.keras.utils.timeseries_dataset_from_array(
@@ -155,11 +154,13 @@ callbacks = [
 
 # Initialise tuner and search
 tuner = keras_tuner.Hyperband(IterableHyperModel(inputs, two_layer_dropout), objective=keras_tuner.Objective(
-    'val_precision', direction='max'), max_epochs=30, seed=42, directory=project_path, project_name=f'{name}_{seqlen}_hour')
+    'val_loss', direction='min'), max_epochs=15, seed=42, directory=project_path, project_name=f'{name}_{seqlen}_hour')
 
 tuner.search(train_tensors, validation_data=val_tensors,
              callbacks=callbacks, epochs=1000, class_weight=weights)
 
-model = tuner.get_best_models(num_models=1)[0]
+# Save teh top 10 models
 time_str = datetime.now().strftime('%m-%d-%Y-%H:%M:%S')
-model.save(f'./models/final_model_{time_str}.keras')
+for trial in tuner.oracle.get_best_trials(10):
+    model = tuner.load_model(trial)
+    model.save(f'./models/final_models/{trial.trial_id}.keras')

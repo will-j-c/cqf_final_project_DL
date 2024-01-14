@@ -56,10 +56,13 @@ precision = tf.keras.metrics.Precision()
 recall = tf.keras.metrics.Recall()
 
 # Define the various feature selection methods
+rf = RandomForestClassifier(n_jobs=-1, class_weight=weights)
 vif = VIFTransform(threshold=5)
+boruta = BorutaPy(rf, n_estimators='auto', verbose=2, perc=90)
 umap = UMAP(n_neighbors=10)
+corr = RemoveCorPairwiseTransform()
 
-pipe = Pipeline([('vif', vif), ('umap', umap)], verbose=True)
+pipe = Pipeline([('pairwisecorr', corr), ('boruta', boruta)], verbose=True)
 
 X_train_pipe = pipe.fit_transform(X_train, y_train.values.ravel())
 X_val_pipe = pipe.transform(X_val)
@@ -156,6 +159,12 @@ models = [[baseline, 'baseline'],
           [three_layer_dropout, 'three_layer_dropout']]
 
 for model_func, name in models:
+    # Clear any backend
+    tf.keras.backend.clear_session()
+    
+    # Set seeds for reproducibility
+    tf.keras.utils.set_random_seed(42)
+    tf.config.experimental.enable_op_determinism()
 
     # Define the sequence length and reshape the data into the correct array
     seqlens = [1, 6, 12, 24]
@@ -177,7 +186,7 @@ for model_func, name in models:
         # Define the callbacks
         callbacks = [
             tf.keras.callbacks.EarlyStopping(
-                patience=10, monitor='val_binary_accuracy', mode='max'),
+                patience=10, monitor='val_loss', mode='min'),
             tf.keras.callbacks.TensorBoard(log_dir=filepath, histogram_freq=1)]
 
         # Initialise the model

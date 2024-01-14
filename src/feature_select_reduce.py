@@ -84,6 +84,12 @@ pipelines = [
 ]
 
 for pipe in pipelines:
+    # Clear any backend
+    tf.keras.backend.clear_session()
+    
+    # Set seeds for reproducibility
+    tf.keras.utils.set_random_seed(42)
+    tf.config.experimental.enable_op_determinism()
     # Time the run
     start = time.time()
 
@@ -104,7 +110,7 @@ for pipe in pipelines:
     print(f'Starting {run_name} run')
     # Callbacks
     callbacks = [
-        tf.keras.callbacks.EarlyStopping(patience=10, monitor='val_binary_accuracy', mode='max'),
+        tf.keras.callbacks.EarlyStopping(patience=10, monitor='val_loss', mode='min'),
         tf.keras.callbacks.TensorBoard(log_dir=filepath, histogram_freq=1)]
     
     if pipe == 'none':
