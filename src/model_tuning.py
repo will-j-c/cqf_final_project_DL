@@ -68,10 +68,13 @@ precision = tf.keras.metrics.Precision()
 recall = tf.keras.metrics.Recall()
 
 # Define the various feature selection methods
+rf = RandomForestClassifier(n_jobs=-1, class_weight=weights)
 vif = VIFTransform(threshold=5)
+boruta = BorutaPy(rf, n_estimators='auto', verbose=2, perc=90)
 umap = UMAP(n_neighbors=10)
+corr = RemoveCorPairwiseTransform()
 
-pipe = Pipeline([('vif', vif), ('umap', umap)], verbose=True)
+pipe = Pipeline([('pairwisecorr', corr), ('boruta', boruta)], verbose=True)
 
 X_train_pipe = pipe.fit_transform(X_train, y_train.values.ravel())
 X_val_pipe = pipe.transform(X_val)
@@ -99,7 +102,7 @@ class IterableHyperModel(keras_tuner.HyperModel):
         
         # Adam optimizer
         # Learning rate
-        lr = hp.Float('learning_rate', min_value=0.0005, max_value=0.)
+        lr = hp.Float('learning_rate', min_value=0.0005, max_value=0.01)
         beta_1 = hp.Float('learning_rate', min_value=0.5, max_value=0.99)
         beta_2 = hp.Float('learning_rate', min_value=0.5, max_value=0.9999)
         optimizer = tf.keras.optimizers.Adam(learning_rate=lr, beta_1=beta_1, beta_2=beta_2)

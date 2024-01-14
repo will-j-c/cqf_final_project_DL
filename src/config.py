@@ -28,10 +28,3 @@ from umap import UMAP
 
 # Metrics
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, RocCurveDisplay, classification_report
-
-# Clear any backend
-tf.keras.backend.clear_session()
-
-# Set seeds for reproducibility
-tf.keras.utils.set_random_seed(42)
-tf.config.experimental.enable_op_determinism()

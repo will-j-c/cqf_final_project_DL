@@ -44,14 +44,12 @@ def plot_metrics(metric_values, val_metric_values, type):
     plt.legend()
     plt.show()
     
-def plot_umap():
+def plot_umap(X_train):
     n_neighbors_arr = [5, 10, 20]
     min_dists = [0.05, 0.1, 0.3]
     fig, ax = plt.subplots(3, 3)
     for i, min_dist in enumerate(min_dists):
-        print(i, min_dist)
-        for j, n in enumerate(n_neighbors_arr):
-            print(j, n)    
+        for j, n in enumerate(n_neighbors_arr):    
             reducer = UMAP(min_dist=min_dist, n_neighbors=n)
             embedding = reducer.fit_transform(X_train)
             params = reducer.get_params()
