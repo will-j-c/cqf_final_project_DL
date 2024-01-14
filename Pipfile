@@ -22,9 +22,13 @@ statsmodels = "*"
 boruta = "*"
 keras-tuner = "*"
 pydot = "*"
+jupyter = "*"
+notebook = "==6.1.0"
 
 [dev-packages]
 ipykernel = "*"
+jupyter-contrib-nbextensions = "*"
+notebook = "*"
 
 [requires]
 python_version = "3.10"

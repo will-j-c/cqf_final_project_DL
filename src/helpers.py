@@ -7,6 +7,11 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 import os
 import shutil
 import glob
+
+# Warnings
+import warnings
+warnings.filterwarnings("ignore")
+
 # Clear any backend
 tf.keras.backend.clear_session()
 
