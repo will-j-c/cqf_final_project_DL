@@ -40,6 +40,12 @@ Install the requirements as normal
 
 Note that the entire script will take several hours to run, depending on the hardware that you are running it on.
 
+### Known Package Instabilities and Fixes
+
+`boruta_py` - The pypi package has some know issues around deprecated `numpy` types. If these issues occur, you may need to manually change `np.float`, `np.int` and `np.bool` to their native python equivalents and it should work. See [this](https://github.com/scikit-learn-contrib/boruta_py/issues/122) GitHub issue for further details.
+
+`pandas-ta` - The requirements.txt file includes the cutting edge release of this package pulled from GitHub. This is due to the pypi package breaking when trying to use the Strategy class. See [this](https://github.com/twopirllc/pandas-ta?tab=readme-ov-file#latest-version) GitHub page.
+
 ### Main File Descriptions
 
 ##### report.ipynb
