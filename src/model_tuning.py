@@ -86,6 +86,25 @@ featurelen = X_train_pipe.shape[-1]
 
 
 class IterableHyperModel(keras_tuner.HyperModel):
+    """
+    A subclass of the HyperModel class from Keras Tuner that rebuilds the build() method.
+
+    Allows iterating over models and tuning automatically. 
+
+    ...
+
+    Attributes
+    ----------
+    inputs : Input
+        A Keras Input class
+    model_func : fn
+        A model function that can take hyperparameter inputs and returns a compiled Keras model.
+
+    Methods
+    -------
+    build(hb)
+        Take a Hyperparameters class and builds a model. Returns a model for use in the Tuner
+    """
     def __init__(self, inputs, model_func, name=None, tunable=True):
         self.inputs = inputs
         self.model_func = model_func
