@@ -28,26 +28,34 @@ def set_seeds(seed=42):
 
 class VIFTransform(BaseEstimator, TransformerMixin):
     """
-    A class used to represent an Animal
+    A VIF transform compatible with SK Learn. Basic structure provided by
+    Kannan Singaravelu, CQF as part of the CQF course.
 
     ...
 
     Attributes
     ----------
-    says_str : str
-        a formatted string to print out what the animal says
-    name : str
-        the name of the animal
-    sound : str
-        the sound that the animal makes
-    num_legs : int
-        the number of legs the animal has (default 4)
+    threshold : float
+        a float between 0 and 1 to indicate the level of the VIF factor above
+        which a feature is discarded
+    dropna: bool
+        A flag to either keep or drop features where there is an error in the
+        VIF calculation (normally due to all zeroes)
+    vif_features : Index
+        a lsit of the removed features
+    fit_transform_run : bool
+        a bool that indicates if the fit_transform method ahs been run
 
     Methods
     -------
-    says(sound=None)
-        Prints the animals name and what sound it makes
+    Follows convention for SK Learn.
+
+    _calc_VIF(X)
+        Returns a pandas dataframe of VIF features and values
+    get_summary()
+        Returns VIF
     """
+
     def __init__(self, threshold=5, dropna=False):
         self.threshold = threshold
         self.dropna = dropna
@@ -106,26 +114,31 @@ class VIFTransform(BaseEstimator, TransformerMixin):
 
 class RemoveCorPairwiseTransform(BaseEstimator, TransformerMixin):
     """
-    A class used to represent an Animal
+    A pairwise correlation transform compatible with SK Learn that keeps the first
+    feature in highly correlated features based on a correlation threshold.
+    Basic structure provided by Kannan Singaravelu, CQF as part of the CQF course.
 
     ...
 
     Attributes
     ----------
-    says_str : str
-        a formatted string to print out what the animal says
-    name : str
-        the name of the animal
-    sound : str
-        the sound that the animal makes
-    num_legs : int
-        the number of legs the animal has (default 4)
+    threshold : float
+        a float between 0 and 1 to indicate the correlation threshold
+    correlated_features : str
+        The feature names of the correlated features removed.
+    fit_transform_run : bool
+        a bool that indicates if the fit_transform method ahs been run
 
     Methods
     -------
-    says(sound=None)
-        Prints the animals name and what sound it makes
+    Follows convention for SK Learn.
+
+    _calc_features(X)
+        Returns the correlated features
+    get_removed()
+        Returns the correalted features removed
     """
+
     def __init__(self, threshold=0.9):
         self.threshold = threshold
         self.correlated_features = None
