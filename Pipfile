@@ -1,0 +1,35 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+numpy = "*"
+pandas = "*"
+matplotlib = "*"
+seaborn = "*"
+scikit-learn = "*"
+yfinance = "*"
+requests = "*"
+python-dotenv = "*"
+umap-learn = {extras = ["plot"], version = "*"}
+plotly = "*"
+nbformat = "*"
+pandas-ta = {ref = "development", git = "https://github.com/twopirllc/pandas-ta.git"}
+ta-lib = "*"
+tensorflow = {extras = ["and-cuda"], version = "*"}
+statsmodels = "*"
+boruta = "*"
+keras-tuner = "*"
+pydot = "*"
+jupyter = "*"
+notebook = "==6.1.0"
+
+[dev-packages]
+ipykernel = "*"
+jupyter-contrib-nbextensions = "*"
+notebook = "*"
+
+[requires]
+python_version = "3.10"
+python_full_version = "3.10.12"
