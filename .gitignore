@@ -1,6 +1,7 @@
 .env
 src/__pycache__
 .keras
+.nv
 
 # Large data files
 data/test

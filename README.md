@@ -2,7 +2,7 @@
 
 ### Package Installation
 
-Python 3.10 is required.
+Python 3.10 is required. TA-Lib is also required.
 
 The preferred installation method is by using [pipenv](https://pipenv.pypa.io/en/latest/) and simply using the following command.
 
